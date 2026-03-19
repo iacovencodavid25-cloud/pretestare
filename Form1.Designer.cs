@@ -1,4 +1,4 @@
-namespace CrudApp
+namespace Exersare
 {
     partial class Form1
     {
@@ -39,11 +39,11 @@ namespace CrudApp
 
             // txtId
             this.txtId.Location = new System.Drawing.Point(12, 230);
-            this.txtId.PlaceholderText = "ID";
+            this.txtId.Text = "ID";
 
             // txtName
             this.txtName.Location = new System.Drawing.Point(120, 230);
-            this.txtName.PlaceholderText = "Name";
+            this.txtName.Text = "Name";
 
             // btnCreate
             this.btnCreate.Location = new System.Drawing.Point(12, 270);

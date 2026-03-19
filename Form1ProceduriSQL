@@ -7,7 +7,6 @@ namespace Exersare
 {
     public partial class Form1 : Form
     {
-        // Conexiunea către baza ta de date
         string connectionString = "Server=localhost;Database=exersareExamen;Integrated Security=True;";
 
         public Form1()
@@ -15,7 +14,8 @@ namespace Exersare
             InitializeComponent();
         }
 
-        // Adăugare departament prin procedura stocată
+        // ---------------- DEPARTAMENT ----------------
+
         private void btnCreateDepartament_Click(object sender, EventArgs e)
         {
             using (SqlConnection con = new SqlConnection(connectionString))
@@ -35,7 +35,58 @@ namespace Exersare
             }
         }
 
-        // Adăugare angajat prin procedura stocată
+        private void btnUpdateDepartament_Click(object sender, EventArgs e)
+        {
+            using (SqlConnection con = new SqlConnection(connectionString))
+            {
+                SqlCommand cmd = new SqlCommand("sp_update_departament", con);
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.AddWithValue("@nr_departament", Convert.ToInt32(txtNrDepartament.Text));
+                cmd.Parameters.AddWithValue("@denumire_departament", txtDepartament.Text);
+                cmd.Parameters.AddWithValue("@sef_departament", txtSef.Text);
+
+                con.Open();
+                cmd.ExecuteNonQuery();
+                con.Close();
+
+                MessageBox.Show("Departament actualizat!");
+                AfiseazaDepartamente();
+            }
+        }
+
+        private void btnDeleteDepartament_Click(object sender, EventArgs e)
+        {
+            using (SqlConnection con = new SqlConnection(connectionString))
+            {
+                SqlCommand cmd = new SqlCommand("sp_delete_departament", con);
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.AddWithValue("@nr_departament", Convert.ToInt32(txtNrDepartament.Text));
+
+                con.Open();
+                cmd.ExecuteNonQuery();
+                con.Close();
+
+                MessageBox.Show("Departament șters!");
+                AfiseazaDepartamente();
+            }
+        }
+
+        private void AfiseazaDepartamente()
+        {
+            using (SqlConnection con = new SqlConnection(connectionString))
+            {
+                string query = "SELECT denumire_departament, COUNT(*) AS nr_angajati FROM v_Angajat_Dep GROUP BY denumire_departament ORDER BY denumire_departament";
+                SqlDataAdapter da = new SqlDataAdapter(query, con);
+                DataTable dt = new DataTable();
+                da.Fill(dt);
+                dataGridView1.DataSource = dt;
+            }
+        }
+
+        // ---------------- ANGAJAT ----------------
+
         private void btnCreateAngajat_Click(object sender, EventArgs e)
         {
             using (SqlConnection con = new SqlConnection(connectionString))
@@ -59,26 +110,48 @@ namespace Exersare
             }
         }
 
-        // Lista angajaților cu stagiu > 20 ani
-        private void btnAngajatiStagiuMare_Click(object sender, EventArgs e)
+        private void btnUpdateAngajat_Click(object sender, EventArgs e)
         {
             using (SqlConnection con = new SqlConnection(connectionString))
             {
-                string query = "SELECT nume_prenume, stagiu FROM v_Angajat_Dep WHERE stagiu > 20";
-                SqlDataAdapter da = new SqlDataAdapter(query, con);
-                DataTable dt = new DataTable();
-                da.Fill(dt);
-                dataGridView1.DataSource = dt;
+                SqlCommand cmd = new SqlCommand("sp_update_angajat", con);
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.AddWithValue("@nume_prenume", txtNume.Text);
+                cmd.Parameters.AddWithValue("@data_nasterii", dtpDataNasterii.Value);
+                cmd.Parameters.AddWithValue("@adresa", txtAdresa.Text);
+                cmd.Parameters.AddWithValue("@telefon", txtTelefon.Text);
+                cmd.Parameters.AddWithValue("@stagiu", Convert.ToInt32(txtStagiu.Text));
+                cmd.Parameters.AddWithValue("@nr_departament", Convert.ToInt32(txtNrDepartament.Text));
+
+                con.Open();
+                cmd.ExecuteNonQuery();
+                con.Close();
+
+                MessageBox.Show("Angajat actualizat!");
+                AfiseazaAngajati();
             }
         }
 
-        // Lista departamentelor și nr. angajați
-        private void btnDepartamente_Click(object sender, EventArgs e)
+        private void btnDeleteAngajat_Click(object sender, EventArgs e)
         {
-            AfiseazaDepartamente();
+            using (SqlConnection con = new SqlConnection(connectionString))
+            {
+                SqlCommand cmd = new SqlCommand("sp_delete_angajat", con);
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.AddWithValue("@nume_prenume", txtNume.Text);
+                cmd.Parameters.AddWithValue("@nr_departament", Convert.ToInt32(txtNrDepartament.Text));
+
+                con.Open();
+                cmd.ExecuteNonQuery();
+                con.Close();
+
+                MessageBox.Show("Angajat șters!");
+                AfiseazaAngajati();
+            }
         }
 
-        // Funcție pentru afișarea angajaților
         private void AfiseazaAngajati()
         {
             using (SqlConnection con = new SqlConnection(connectionString))
@@ -91,12 +164,13 @@ namespace Exersare
             }
         }
 
-        // Funcție pentru afișarea departamentelor
-        private void AfiseazaDepartamente()
+        // ---------------- RAPOARTE ----------------
+
+        private void btnAngajatiStagiuMare_Click(object sender, EventArgs e)
         {
             using (SqlConnection con = new SqlConnection(connectionString))
             {
-                string query = "SELECT denumire_departament, COUNT(*) AS nr_angajati FROM v_Angajat_Dep GROUP BY denumire_departament ORDER BY denumire_departament";
+                string query = "SELECT nume_prenume, stagiu FROM v_Angajat_Dep WHERE stagiu > 20";
                 SqlDataAdapter da = new SqlDataAdapter(query, con);
                 DataTable dt = new DataTable();
                 da.Fill(dt);

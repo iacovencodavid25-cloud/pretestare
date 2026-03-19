@@ -1,0 +1,107 @@
+using System;
+using System.Data;
+using System.Data.SqlClient;
+using System.Windows.Forms;
+
+namespace Exersare
+{
+    public partial class Form1 : Form
+    {
+        // Conexiunea către baza ta de date
+        string connectionString = "Server=localhost;Database=exersareExamen;Integrated Security=True;";
+
+        public Form1()
+        {
+            InitializeComponent();
+        }
+
+        // Adăugare departament prin procedura stocată
+        private void btnCreateDepartament_Click(object sender, EventArgs e)
+        {
+            using (SqlConnection con = new SqlConnection(connectionString))
+            {
+                SqlCommand cmd = new SqlCommand("sp_adauga_departament", con);
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.AddWithValue("@denumire_departament", txtDepartament.Text);
+                cmd.Parameters.AddWithValue("@sef_departament", txtSef.Text);
+
+                con.Open();
+                cmd.ExecuteNonQuery();
+                con.Close();
+
+                MessageBox.Show("Departament adăugat!");
+                AfiseazaDepartamente();
+            }
+        }
+
+        // Adăugare angajat prin procedura stocată
+        private void btnCreateAngajat_Click(object sender, EventArgs e)
+        {
+            using (SqlConnection con = new SqlConnection(connectionString))
+            {
+                SqlCommand cmd = new SqlCommand("sp_adauga_angajat", con);
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.AddWithValue("@nume_prenume", txtNume.Text);
+                cmd.Parameters.AddWithValue("@data_nasterii", dtpDataNasterii.Value);
+                cmd.Parameters.AddWithValue("@adresa", txtAdresa.Text);
+                cmd.Parameters.AddWithValue("@telefon", txtTelefon.Text);
+                cmd.Parameters.AddWithValue("@stagiu", Convert.ToInt32(txtStagiu.Text));
+                cmd.Parameters.AddWithValue("@nr_departament", Convert.ToInt32(txtNrDepartament.Text));
+
+                con.Open();
+                cmd.ExecuteNonQuery();
+                con.Close();
+
+                MessageBox.Show("Angajat adăugat!");
+                AfiseazaAngajati();
+            }
+        }
+
+        // Lista angajaților cu stagiu > 20 ani
+        private void btnAngajatiStagiuMare_Click(object sender, EventArgs e)
+        {
+            using (SqlConnection con = new SqlConnection(connectionString))
+            {
+                string query = "SELECT nume_prenume, stagiu FROM v_Angajat_Dep WHERE stagiu > 20";
+                SqlDataAdapter da = new SqlDataAdapter(query, con);
+                DataTable dt = new DataTable();
+                da.Fill(dt);
+                dataGridView1.DataSource = dt;
+            }
+        }
+
+        // Lista departamentelor și nr. angajați
+        private void btnDepartamente_Click(object sender, EventArgs e)
+        {
+            AfiseazaDepartamente();
+        }
+
+        // Funcție pentru afișarea angajaților
+        private void AfiseazaAngajati()
+        {
+            using (SqlConnection con = new SqlConnection(connectionString))
+            {
+                string query = "SELECT * FROM Angajat";
+                SqlDataAdapter da = new SqlDataAdapter(query, con);
+                DataTable dt = new DataTable();
+                da.Fill(dt);
+                dataGridView1.DataSource = dt;
+            }
+        }
+
+        // Funcție pentru afișarea departamentelor
+        private void AfiseazaDepartamente()
+        {
+            using (SqlConnection con = new SqlConnection(connectionString))
+            {
+                string query = "SELECT denumire_departament, COUNT(*) AS nr_angajati FROM v_Angajat_Dep GROUP BY denumire_departament ORDER BY denumire_departament";
+                SqlDataAdapter da = new SqlDataAdapter(query, con);
+                DataTable dt = new DataTable();
+                da.Fill(dt);
+                dataGridView1.DataSource = dt;
+            }
+        }
+    }
+}
